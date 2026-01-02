@@ -2,52 +2,54 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-
-// ... inside class ...
+import { jwtDecode } from 'jwt-decode';
+import { LoginRequest, LoginResponse, RegisterRequest, MessageResponse, User, UserDetail } from '../interfaces/auth.interfaces';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private http = inject(HttpClient);
-  // Ensure this matches your .NET API URL
-  private apiUrl = environment.apiUrl;
 
-  getUserDetail() {
+  private apiUrl = environment.apiUrl;
+  private tokenKey = 'authToken';
+
+  getUserDetail(): UserDetail | null {
     const token = this.getToken();
     if (!token) return null;
-    
-    // Decode the token payload
-    const payload = token.split('.')[1];
-    const decodedHtml = atob(payload);
-    const json = JSON.parse(decodedHtml);
-    
-    return {
-      id: json.sub,
-      email: json.email,
-      username: json.unique_name || json.name
-    };
+
+    try {
+      const decodedToken = jwtDecode<User>(token);
+      return {
+        id: decodedToken.sub,
+        email: decodedToken.email,
+        username: decodedToken.name
+      };
+    } catch (error) {
+      console.error('Failed to decode token', error);
+      return null;
+    }
   }
 
   constructor() { }
 
-  register(userData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, userData);
+  register(userData: RegisterRequest): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${this.apiUrl}/register`, userData);
   }
 
-  login(credentials: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, credentials);
+  login(credentials: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials);
   }
 
   saveToken(token: string) {
-    localStorage.setItem('authToken', token);
+    localStorage.setItem(this.tokenKey, token);
   }
 
   getToken() {
-    return localStorage.getItem('authToken');
+    return localStorage.getItem(this.tokenKey);
   }
 
   logout() {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem(this.tokenKey);
   }
 }

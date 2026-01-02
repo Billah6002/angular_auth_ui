@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Needed for forms
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { LoginRequest, LoginResponse } from '../../interfaces/auth.interfaces';
 
 @Component({
   selector: 'app-login',
@@ -15,7 +16,7 @@ export class LoginComponent {
   authService = inject(AuthService);
   router = inject(Router);
 
-  loginData = {
+  loginData: LoginRequest = {
     email: '',
     password: ''
   };
@@ -23,9 +24,9 @@ export class LoginComponent {
   onSubmit() {
     // Call the API
     this.authService.login(this.loginData).subscribe({
-      next: (response: any) => {
+      next: (response: LoginResponse) => {
         this.authService.saveToken(response.token);
-        
+
         console.log('Login successful!', response);
         // alert('Login Success! Token saved.');
         this.router.navigate(['/dashboard']);

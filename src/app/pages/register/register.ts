@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { RegisterRequest, MessageResponse } from '../../interfaces/auth.interfaces';
 
 @Component({
   selector: 'app-register',
@@ -15,7 +16,7 @@ export class RegisterComponent {
   authService = inject(AuthService);
   router = inject(Router);
 
-  registerData = {
+  registerData: RegisterRequest = {
     username: '',
     email: '',
     password: ''
@@ -23,7 +24,7 @@ export class RegisterComponent {
 
   onSubmit() {
     this.authService.register(this.registerData).subscribe({
-      next: (res: any) => {
+      next: (res: MessageResponse) => {
         alert('Registration Successful! Please Login.');
         this.router.navigate(['/login']);
       },
